@@ -1,19 +1,31 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts, handleDelete } from './postsSlice';
 
 const PostExcerpt = ({ post }) => {
     const dispatch = useDispatch();
+    const [quantity, setQuantity] = useState(0); // Local state for quantity
 
     const handleDeleteClick = () => {
         dispatch(handleDelete(post.id));
     };
 
+    const handleIncreaseQuantity = () => {
+        setQuantity(prevQuantity => prevQuantity + 1); // Increase quantity by 1
+    };
+
+    const handleDecreaseQuantity = () => {
+        setQuantity(prevQuantity => Math.max(prevQuantity - 1, 0)); // Decrease quantity by 1, ensure it doesn't go below 0
+    };
+
     return (
         <tr key={post.id}>
             <td>{post.title}</td>
+            <td>{quantity}</td> {/* Display the local quantity */}
             <td>
-                <button onClick={handleDeleteClick}>Delete</button>
+                <button onClick={handleIncreaseQuantity}>+</button> {/* Button to increase quantity */}
+                <button onClick={handleDecreaseQuantity}>-</button> {/* Button to decrease quantity */}
+                <button onClick={handleDeleteClick}>Remove</button>
             </td>
         </tr>
     );
@@ -41,6 +53,7 @@ export const PostsList = () => {
                 <thead>
                     <tr>
                         <th>Title</th>
+                        <th>Quantity</th> {/* Header for quantity */}
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -57,7 +70,7 @@ export const PostsList = () => {
 
     return (
         <section>
-            <h2>Posts</h2>
+            <h2>Basket</h2>
             {content}
         </section>
     );

@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addNewPost, fetchPosts } from './postsSlice';
 
 export const AddPostForm = () => {
     const dispatch = useDispatch();
     const posts = useSelector((state) => state.posts.posts);
-    const [items, setItems] = useState([
+    const [items] = React.useState([
         { title: 'Item1', content: 'Content for Item1' },
         { title: 'Item2', content: 'Content for Item2' },
         { title: 'Item3', content: 'Content for Item3' }
     ]);
 
-    // Ensure posts are fetched before rendering items
+    // Ensure posts are fetched before handling item clicks
     useEffect(() => {
         dispatch(fetchPosts());
     }, [dispatch]);
