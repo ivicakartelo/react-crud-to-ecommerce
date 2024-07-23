@@ -5,7 +5,7 @@ import { fetchPosts, handleDelete } from './postsSlice';
 // PostExcerpt component for displaying individual post details
 const PostExcerpt = ({ post, onUpdateQuantity }) => {
     const dispatch = useDispatch();
-    const [quantity, setQuantity] = useState(0); // Local state for quantity
+    const [quantity, setQuantity] = useState(1); // Initialize quantity to 1
 
     const handleDeleteClick = () => {
         dispatch(handleDelete(post.id));
@@ -21,7 +21,7 @@ const PostExcerpt = ({ post, onUpdateQuantity }) => {
 
     const handleDecreaseQuantity = () => {
         setQuantity(prevQuantity => {
-            const newQuantity = Math.max(prevQuantity - 1, 0);
+            const newQuantity = Math.max(prevQuantity - 1, 1); // Ensure quantity doesn't go below 1
             onUpdateQuantity(post.id, newQuantity); // Notify parent of quantity change
             return newQuantity;
         });
@@ -64,7 +64,7 @@ export const PostsList = () => {
 
     const calculateTotal = () => {
         return posts.reduce((total, post) => {
-            const quantity = quantities[post.id] || 0;
+            const quantity = quantities[post.id] || 1; // Default to 1 if no quantity is set
             return total + post.price * quantity; // Calculate total by multiplying price and quantity
         }, 0).toFixed(2);
     };
