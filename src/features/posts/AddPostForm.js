@@ -1,17 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addNewPost, fetchPosts } from './postsSlice';
 
 export const AddPostForm = () => {
     const dispatch = useDispatch();
     const posts = useSelector((state) => state.posts.posts);
-    const [items] = React.useState([
-        { title: 'Item1', content: 'Content for Item1' },
-        { title: 'Item2', content: 'Content for Item2' },
-        { title: 'Item3', content: 'Content for Item3' }
+    const [items, setItems] = useState([
+        { title: 'Item1', content: 'Content for Item1', price: 10 },
+        { title: 'Item2', content: 'Content for Item2', price: 20 },
+        { title: 'Item3', content: 'Content for Item3', price: 30 }
     ]);
 
-    // Ensure posts are fetched before handling item clicks
+    // Ensure posts are fetched before rendering items
     useEffect(() => {
         dispatch(fetchPosts());
     }, [dispatch]);
@@ -39,7 +39,7 @@ export const AddPostForm = () => {
                 {items.map(item => (
                     <li key={item.title}>
                         <button onClick={() => handleItemClick(item)}>
-                            {item.title}
+                            {item.title} - ${item.price}
                         </button>
                     </li>
                 ))}

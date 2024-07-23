@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPosts, handleDelete } from './postsSlice';
+import { fetchPosts, handleDelete, addNewPost } from './postsSlice';
 
+// PostExcerpt component for displaying individual post details
 const PostExcerpt = ({ post }) => {
     const dispatch = useDispatch();
     const [quantity, setQuantity] = useState(0); // Local state for quantity
@@ -21,6 +22,7 @@ const PostExcerpt = ({ post }) => {
     return (
         <tr key={post.id}>
             <td>{post.title}</td>
+            <td>${post.price}</td> {/* Display the price */}
             <td>{quantity}</td> {/* Display the local quantity */}
             <td>
                 <button onClick={handleIncreaseQuantity}>+</button> {/* Button to increase quantity */}
@@ -31,6 +33,7 @@ const PostExcerpt = ({ post }) => {
     );
 };
 
+// PostsList component for displaying the list of posts in a table
 export const PostsList = () => {
     const dispatch = useDispatch();
     const posts = useSelector((state) => state.posts.posts);
@@ -53,6 +56,7 @@ export const PostsList = () => {
                 <thead>
                     <tr>
                         <th>Title</th>
+                        <th>Price</th> {/* Header for price */}
                         <th>Quantity</th> {/* Header for quantity */}
                         <th>Actions</th>
                     </tr>
