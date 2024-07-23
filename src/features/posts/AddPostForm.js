@@ -1,22 +1,34 @@
-import React from 'react';
-import { useDispatch } from 'react-redux';
-import { addNewPost } from './postsSlice';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { addNewPost, fetchPosts } from './postsSlice';
 
 export const AddPostForm = () => {
     const dispatch = useDispatch();
+    const posts = useSelector((state) => state.posts.posts);
+    const [items, setItems] = useState([
+        { title: 'Item1', content: 'Content for Item1' },
+        { title: 'Item2', content: 'Content for Item2' },
+        { title: 'Item3', content: 'Content for Item3' }
+    ]);
 
-    const posts = [
-        { title: 'Post1', content: 'Content for Post1' },
-        { title: 'Post2', content: 'Content for Post2' },
-        { title: 'Post3', content: 'Content for Post3' }
-    ];
+    // Ensure posts are fetched before rendering items
+    useEffect(() => {
+        dispatch(fetchPosts());
+    }, [dispatch]);
 
-    const handleItemClick = async (post) => {
+    const handleItemClick = async (item) => {
+        // Check if the post already exists
+        const existingPost = posts.find(post => post.title === item.title);
+        if (existingPost) {
+            console.log('Post already exists:', existingPost);
+            return; // Do nothing if post already exists
+        }
+
         try {
             // Dispatch thunk action to add the new post
-            await dispatch(addNewPost(post)).unwrap();
+            await dispatch(addNewPost(item)).unwrap();
         } catch (error) {
-            console.error('Failed to add new post: ', error);
+            console.error('Failed to add new post:', error);
         }
     };
 
@@ -24,10 +36,10 @@ export const AddPostForm = () => {
         <section>
             <h2>Select an Item</h2>
             <ul>
-                {posts.map(post => (
-                    <li key={post.title}>
-                        <button onClick={() => handleItemClick(post)}>
-                            {post.title}
+                {items.map(item => (
+                    <li key={item.title}>
+                        <button onClick={() => handleItemClick(item)}>
+                            {item.title}
                         </button>
                     </li>
                 ))}
