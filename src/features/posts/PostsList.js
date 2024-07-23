@@ -1,66 +1,64 @@
-import React, { useEffect, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { fetchPosts, handleDelete } from './postsSlice'
-import { UpdatePostForm } from './UpdatePostForm'
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchPosts, handleDelete } from './postsSlice';
 
 const PostExcerpt = ({ post }) => {
-    console.log("The PostExcerpt rendered")
-    const [showEditForm, setShowEditForm] = useState(false);
-    const [updateId, setUpdateId] = useState('')
-    const dispatch = useDispatch()
+    const dispatch = useDispatch();
 
-    const handleUpdate = (id) => {
-        setUpdateId(id);
-        setShowEditForm(true);
-      }      
+    const handleDeleteClick = () => {
+        dispatch(handleDelete(post.id));
+    };
+
     return (
-        <article key={post.id}>
+        <tr key={post.id}>
+            <td>{post.title}</td>
+            <td>
+                <button onClick={handleDeleteClick}>Delete</button>
+            </td>
+        </tr>
+    );
+};
 
-            <h3>{post.title}</h3>
-            <p>{post.content}</p>
-
-            {showEditForm && updateId === post.id ? (
-                <UpdatePostForm
-                    post={post}
-                    setShowEditForm={setShowEditForm}
-                />
-                ) : (
-                <button onClick={() => handleUpdate(post.id)}>
-                    Update
-                </button>
-            )}
-            <button onClick={() => dispatch(handleDelete(post.id))}>Delete</button>
-        </article>
-    )
-}
 export const PostsList = () => {
-    console.log("The PostsList rendered")
-    const dispatch = useDispatch()
-    const posts = useSelector(state => state.posts.posts)
-    console.log(posts)
-    const status = useSelector(state => state.posts.status)
-    console.log(status)
-    const error = useSelector(state => state.posts.error)
-    console.log(error)
-  
+    const dispatch = useDispatch();
+    const posts = useSelector((state) => state.posts.posts);
+    const status = useSelector((state) => state.posts.status);
+    const error = useSelector((state) => state.posts.error);
+
     useEffect(() => {
-        status === 'idle' && dispatch(fetchPosts())
-    },[status, dispatch])
+        if (status === 'idle') {
+            dispatch(fetchPosts());
+        }
+    }, [status, dispatch]);
 
-let content
+    let content;
 
-status === 'loading' ? (
-    content = <h1>Loading...</h1>
-) : status === 'succeeded' ? (
-    content = posts.map(post => <PostExcerpt key={post.id} post={post} />)
-) : (
-    content = <div>Error: {error}</div>
-)
+    if (status === 'loading') {
+        content = <h1>Loading...</h1>;
+    } else if (status === 'succeeded') {
+        content = (
+            <table>
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {posts.map((post) => (
+                        <PostExcerpt key={post.id} post={post} />
+                    ))}
+                </tbody>
+            </table>
+        );
+    } else if (status === 'failed') {
+        content = <div>Error: {error}</div>;
+    }
 
     return (
         <section>
             <h2>Posts</h2>
             {content}
         </section>
-    )
-}
+    );
+};
