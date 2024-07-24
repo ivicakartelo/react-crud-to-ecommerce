@@ -63,9 +63,19 @@ export const PostsList = () => {
       tableRows.push(postData);
     });
 
+    // Add table to PDF
     doc.autoTable(tableColumn, tableRows, { startY: 30 });
+
+    // Calculate and add total amount
+    const totalAmount = basket.reduce((total, post) => total + (post.quantity * post.price), 0);
+    doc.text(`Total: $${totalAmount}`, 20, doc.lastAutoTable.finalY + 10);
+
+    // Save PDF
     doc.save('invoice.pdf');
   };
+
+  // Calculate the total of the totals
+  const totalAmount = basket.reduce((total, post) => total + (post.quantity * post.price), 0);
 
   let content;
 
@@ -89,6 +99,13 @@ export const PostsList = () => {
               <PostExcerpt key={post.id} post={post} />
             ))}
           </tbody>
+          <tfoot>
+            <tr>
+              <td colSpan="3">Total</td>
+              <td>{totalAmount}</td>
+              <td></td>
+            </tr>
+          </tfoot>
         </table>
         <button onClick={handleGenerateInvoice}>Generate Invoice</button>
       </>

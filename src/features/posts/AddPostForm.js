@@ -6,9 +6,9 @@ export const AddPostForm = () => {
   const dispatch = useDispatch();
   const posts = useSelector((state) => state.posts.posts);
   const [items, setItems] = useState([
-    { id: '1', title: 'Item1', content: 'Content for Item1', price: 10 },
-    { id: '2', title: 'Item2', content: 'Content for Item2', price: 20 },
-    { id: '3', title: 'Item3', content: 'Content for Item3', price: 30 }
+    { id: '1', title: 'Item1', content: 'Content for Item1', price: 10, image: 'image1.jpg' },
+    { id: '2', title: 'Item2', content: 'Content for Item2', price: 20, image: 'image2.jpg' },
+    { id: '3', title: 'Item3', content: 'Content for Item3', price: 30, image: 'image3.jpg' }
   ]);
 
   // Ensure posts are fetched before rendering items
@@ -31,12 +31,14 @@ export const AddPostForm = () => {
   return (
     <section>
       <h2>Select an Item</h2>
-      <ul>
+      <ul className="item-list">
         {items.map(item => (
-          <li key={item.id}>
+          <li key={item.id} className="item">
             <button onClick={() => handleItemClick(item)}>
               {item.title}
             </button>
+            <p>{item.content}</p>
+            <img src={`/images/${item.image}`} alt={item.title} />
           </li>
         ))}
       </ul>
