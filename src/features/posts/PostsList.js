@@ -1,116 +1,106 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPosts, handleDelete } from './postsSlice';
+import { fetchPosts, removeFromBasket, increaseQuantity, decreaseQuantity } from './postsSlice';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
-// PostExcerpt component for displaying individual post details
-const PostExcerpt = ({ post, onUpdateQuantity }) => {
-    const dispatch = useDispatch();
-    const [quantity, setQuantity] = useState(1); // Initialize quantity to 1
+const PostExcerpt = ({ post }) => {
+  const dispatch = useDispatch();
 
-    const handleDeleteClick = () => {
-        dispatch(handleDelete(post.id));
-    };
+  const handleRemoveClick = () => {
+    dispatch(removeFromBasket(post.id));
+  };
 
-    const handleIncreaseQuantity = () => {
-        setQuantity(prevQuantity => {
-            const newQuantity = prevQuantity + 1;
-            onUpdateQuantity(post.id, newQuantity); // Notify parent of quantity change
-            return newQuantity;
-        });
-    };
+  const handleIncreaseQuantity = () => {
+    dispatch(increaseQuantity(post.id));
+  };
 
-    const handleDecreaseQuantity = () => {
-        setQuantity(prevQuantity => {
-            const newQuantity = Math.max(prevQuantity - 1, 1); // Ensure quantity doesn't go below 1
-            onUpdateQuantity(post.id, newQuantity); // Notify parent of quantity change
-            return newQuantity;
-        });
-    };
+  const handleDecreaseQuantity = () => {
+    dispatch(decreaseQuantity(post.id));
+  };
 
-    return (
-        <tr key={post.id}>
-            <td>{post.title}</td>
-            <td>${post.price.toFixed(2)}</td> {/* Display the price with 2 decimal places */}
-            <td>{quantity}</td> {/* Display the local quantity */}
-            <td>
-                <button onClick={handleIncreaseQuantity}>+</button> {/* Button to increase quantity */}
-                <button onClick={handleDecreaseQuantity}>-</button> {/* Button to decrease quantity */}
-                <button onClick={handleDeleteClick}>Remove</button>
-            </td>
-        </tr>
-    );
+  return (
+    <tr key={post.id}>
+      <td>{post.title}</td>
+      <td>{post.quantity}</td>
+      <td>{post.price}</td>
+      <td>{post.quantity * post.price}</td>
+      <td>
+        <button onClick={handleIncreaseQuantity}>+</button>
+        <button onClick={handleDecreaseQuantity}>-</button>
+        <button onClick={handleRemoveClick}>Remove</button>
+      </td>
+    </tr>
+  );
 };
 
-// PostsList component for displaying the list of posts in a table
 export const PostsList = () => {
-    const dispatch = useDispatch();
-    const posts = useSelector((state) => state.posts.posts);
-    const status = useSelector((state) => state.posts.status);
-    const error = useSelector((state) => state.posts.error);
-    const [quantities, setQuantities] = useState({}); // Track quantities of posts
+  const dispatch = useDispatch();
+  const posts = useSelector((state) => state.posts.posts);
+  const basket = useSelector((state) => state.posts.basket);
+  const status = useSelector((state) => state.posts.status);
+  const error = useSelector((state) => state.posts.error);
 
-    useEffect(() => {
-        if (status === 'idle') {
-            dispatch(fetchPosts());
-        }
-    }, [status, dispatch]);
-
-    const handleUpdateQuantity = (postId, newQuantity) => {
-        setQuantities(prevQuantities => ({
-            ...prevQuantities,
-            [postId]: newQuantity
-        }));
-    };
-
-    const calculateTotal = () => {
-        return posts.reduce((total, post) => {
-            const quantity = quantities[post.id] || 1; // Default to 1 if no quantity is set
-            return total + post.price * quantity; // Calculate total by multiplying price and quantity
-        }, 0).toFixed(2);
-    };
-
-    let content;
-
-    if (status === 'loading') {
-        content = <h1>Loading...</h1>;
-    } else if (status === 'succeeded') {
-        content = (
-            <>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Price</th> {/* Header for price */}
-                            <th>Quantity</th> {/* Header for quantity */}
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {posts.map((post) => (
-                            <PostExcerpt
-                                key={post.id}
-                                post={post}
-                                onUpdateQuantity={handleUpdateQuantity}
-                            />
-                        ))}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colSpan="2"><strong>Total</strong></td>
-                            <td colSpan="2">${calculateTotal()}</td> {/* Display the total amount */}
-                        </tr>
-                    </tfoot>
-                </table>
-            </>
-        );
-    } else if (status === 'failed') {
-        content = <div>Error: {error}</div>;
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchPosts());
     }
+  }, [status, dispatch]);
 
-    return (
-        <section>
-            <h2>Basket</h2>
-            {content}
-        </section>
+  const handleGenerateInvoice = () => {
+    const doc = new jsPDF();
+    doc.text('Invoice', 20, 20);
+    const tableColumn = ["Title", "Quantity", "Price", "Total"];
+    const tableRows = [];
+
+    basket.forEach(post => {
+      const postData = [
+        post.title,
+        post.quantity,
+        post.price,
+        post.quantity * post.price
+      ];
+      tableRows.push(postData);
+    });
+
+    doc.autoTable(tableColumn, tableRows, { startY: 30 });
+    doc.save('invoice.pdf');
+  };
+
+  let content;
+
+  if (status === 'loading') {
+    content = <h1>Loading...</h1>;
+  } else if (status === 'succeeded') {
+    content = (
+      <>
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Total</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {basket.map((post) => (
+              <PostExcerpt key={post.id} post={post} />
+            ))}
+          </tbody>
+        </table>
+        <button onClick={handleGenerateInvoice}>Generate Invoice</button>
+      </>
     );
+  } else if (status === 'failed') {
+    content = <div>Error: {error}</div>;
+  }
+
+  return (
+    <section>
+      <h2>Basket</h2>
+      {content}
+    </section>
+  );
 };
