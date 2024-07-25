@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts, addToBasket } from './postsSlice';
-
+import '../../index.css'; // Ensure this path is correct
 export const AddPostForm = () => {
   const dispatch = useDispatch();
   const posts = useSelector((state) => state.posts.posts);
@@ -11,34 +11,39 @@ export const AddPostForm = () => {
     { id: '3', title: 'Item3', content: 'Content for Item3', price: 30, image: 'image3.jpg' }
   ]);
 
-  // Ensure posts are fetched before rendering items
   useEffect(() => {
     dispatch(fetchPosts());
   }, [dispatch]);
 
   const handleItemClick = (item) => {
-    // Check if the post already exists in the basket
     const existingPost = posts.find(post => post.title === item.title);
     if (existingPost) {
       console.log('Post already exists:', existingPost);
-      return; // Do nothing if post already exists
+      return;
     }
 
-    // Dispatch action to add the new post to the basket
     dispatch(addToBasket(item));
   };
 
   return (
-    <section>
-      <h2>Select an Item</h2>
-      <ul className="item-list">
+    <section className="my-8">
+      <h2 className="text-2xl font-bold mb-4">Select an Item</h2>
+      <ul className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {items.map(item => (
-          <li key={item.id} className="item">
-            <button onClick={() => handleItemClick(item)}>
+          <li key={item.id} className="border p-4 rounded-lg shadow-md">
+            <button
+              onClick={() => handleItemClick(item)}
+              className="text-lg font-medium text-blue-600 hover:underline"
+            >
               {item.title}
             </button>
-            <p>{item.content}</p>
-            <img src={`/images/${item.image}`} alt={item.title} />
+            <p className="mt-2">{item.content}</p>
+            <img
+              src={`/images/${item.image}`}
+              alt={item.title}
+              className="mt-4 w-full h-32 object-cover"
+            />
+            <p className="mt-2 font-bold">${item.price}</p>
           </li>
         ))}
       </ul>

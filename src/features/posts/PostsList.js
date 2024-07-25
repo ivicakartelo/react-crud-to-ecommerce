@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchPosts, removeFromBasket, increaseQuantity, decreaseQuantity } from './postsSlice';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import '../../index.css'; // Ensure this path is correct
 
 const PostExcerpt = ({ post }) => {
   const dispatch = useDispatch();
@@ -21,14 +22,14 @@ const PostExcerpt = ({ post }) => {
 
   return (
     <tr key={post.id}>
-      <td>{post.title}</td>
-      <td>{post.quantity}</td>
-      <td>{post.price}</td>
-      <td>{post.quantity * post.price}</td>
-      <td>
-        <button onClick={handleIncreaseQuantity}>+</button>
-        <button onClick={handleDecreaseQuantity}>-</button>
-        <button onClick={handleRemoveClick}>Remove</button>
+      <td className="border px-4 py-2">{post.title}</td>
+      <td className="border px-4 py-2">{post.quantity}</td>
+      <td className="border px-4 py-2">${post.price}</td>
+      <td className="border px-4 py-2">${post.quantity * post.price}</td>
+      <td className="border px-4 py-2 flex space-x-2">
+        <button onClick={handleIncreaseQuantity} className="bg-blue-500 text-white px-2 py-1 rounded">+</button>
+        <button onClick={handleDecreaseQuantity} className="bg-blue-500 text-white px-2 py-1 rounded">-</button>
+        <button onClick={handleRemoveClick} className="bg-red-500 text-white px-2 py-1 rounded">Remove</button>
       </td>
     </tr>
   );
@@ -63,35 +64,35 @@ export const PostsList = () => {
       tableRows.push(postData);
     });
 
-    // Add table to PDF
-    doc.autoTable(tableColumn, tableRows, { startY: 30 });
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 30
+    });
 
-    // Calculate and add total amount
     const totalAmount = basket.reduce((total, post) => total + (post.quantity * post.price), 0);
     doc.text(`Total: $${totalAmount}`, 20, doc.lastAutoTable.finalY + 10);
 
-    // Save PDF
     doc.save('invoice.pdf');
   };
 
-  // Calculate the total of the totals
   const totalAmount = basket.reduce((total, post) => total + (post.quantity * post.price), 0);
 
   let content;
 
   if (status === 'loading') {
-    content = <h1>Loading...</h1>;
+    content = <h1 className="text-2xl font-bold">Loading...</h1>;
   } else if (status === 'succeeded') {
     content = (
       <>
-        <table>
+        <table className="table-auto w-full border-collapse border border-gray-200 mt-8">
           <thead>
             <tr>
-              <th>Title</th>
-              <th>Quantity</th>
-              <th>Price</th>
-              <th>Total</th>
-              <th>Actions</th>
+              <th className="border px-4 py-2">Title</th>
+              <th className="border px-4 py-2">Quantity</th>
+              <th className="border px-4 py-2">Price</th>
+              <th className="border px-4 py-2">Total</th>
+              <th className="border px-4 py-2">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -101,22 +102,24 @@ export const PostsList = () => {
           </tbody>
           <tfoot>
             <tr>
-              <td colSpan="3">Total</td>
-              <td>{totalAmount}</td>
-              <td></td>
+              <td colSpan="3" className="border px-4 py-2">Total</td>
+              <td className="border px-4 py-2">${totalAmount}</td>
+              <td className="border px-4 py-2"></td>
             </tr>
           </tfoot>
         </table>
-        <button onClick={handleGenerateInvoice}>Generate Invoice</button>
+        <button onClick={handleGenerateInvoice} className="bg-green-500 text-white px-4 py-2 mt-4 rounded">
+          Generate Invoice
+        </button>
       </>
     );
   } else if (status === 'failed') {
-    content = <div>Error: {error}</div>;
+    content = <div className="text-red-500">Error: {error}</div>;
   }
 
   return (
-    <section>
-      <h2>Basket</h2>
+    <section className="my-8">
+      <h2 className="text-2xl font-bold">Basket</h2>
       {content}
     </section>
   );
